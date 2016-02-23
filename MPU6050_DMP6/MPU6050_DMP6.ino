@@ -273,14 +273,6 @@ void loop() {
         Serial.println(aaWorld.z);
 
         setColor(round(ypr[0]*180/M_PI) % 255,round(ypr[1]*180/M_PI) % 255, round(ypr[2]*180/M_PI) % 255);
-        if(abs(aaWorld.x) > 5000 || abs(aaWorld.y) > 5000 || abs(aaWorld.x) > 5000) //should be using abs or no?
-        {
-          digitalWrite(12, HIGH);
-        }
-        else
-        {
-          digitalWrite(12, LOW);
-        }
 
     }
     
