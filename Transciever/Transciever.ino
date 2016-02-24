@@ -22,9 +22,9 @@
 
 MPU6050 mpu;
 
-#define LED_R 6
-#define LED_G 10
-#define LED_B 9
+#define LED_R 10
+#define LED_G 9
+#define LED_B 6
 #define BUFFER_SIZE 16
 
 int curr_R;
@@ -69,16 +69,16 @@ void setColor(int red, int green, int blue)
     analogWrite(LED_R, 255-red);
     analogWrite(LED_G, 255-green);
     analogWrite(LED_B, 255-blue);
-
-    curr_R = red;
-    curr_G = green;
-    curr_B = blue;
-    
 }
 
 byte addresses[][6] = {"1Node","2Node"};
 
 void setup() {
+    // configure LED for output
+    pinMode(LED_R, OUTPUT);
+    pinMode(LED_G, OUTPUT);
+    pinMode(LED_B, OUTPUT);
+    
     // join I2C bus (I2Cdev library doesn't do this automatically)
     #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
         Wire.begin();
@@ -132,6 +132,20 @@ void setup() {
         Serial.println(F("DMP ready! Waiting for first interrupt..."));
         dmpReady = true;
 
+        //blink led to signal successful initialization
+        setColor(0,255,0);
+        delay(500);
+        setColor(0,0,0);
+        delay(500);
+        setColor(0,255,0);
+        delay(500);
+        setColor(0,0,0);
+        delay(500);
+        setColor(0,255,0);
+        delay(500);
+        setColor(0,0,0);
+        delay(500);
+
         // get expected DMP packet size for later comparison
         packetSize = mpu.dmpGetFIFOPacketSize();
     } else {
@@ -144,10 +158,7 @@ void setup() {
         Serial.println(F(")"));
     }
     
-    // configure LED for output
-    pinMode(LED_R, OUTPUT);
-    pinMode(LED_G, OUTPUT);
-    pinMode(LED_B, OUTPUT);
+    
     
     radio.begin();
     
@@ -206,7 +217,17 @@ void loop() {
          Serial.print(F("Received: "));
          Serial.println((message));
          Serial.print(F("Sent response "));
-         Serial.println((message_back));  
+         Serial.println((message_back));
+
+         int msg_R;
+         int msg_G;
+         int msg_B;
+         sscanf(message,"%i,%i,%i",&msg_R,&msg_G,&msg_B);
+         char string[BUFFER_SIZE];
+         sprintf(string,"R: %i,G: %i,B: %i", msg_R,msg_G,msg_B);
+         Serial.println(string);
+         setColor(msg_R,msg_G,msg_B);
+         delay(3000);
         }
     }
 
@@ -241,7 +262,11 @@ void loop() {
         mpu.dmpGetGravity(&gravity, &q);
         mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
         mpu.dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
-        setColor(round(ypr[0]*180/M_PI) % 255,round(ypr[1]*180/M_PI) % 255, round(ypr[2]*180/M_PI) % 255);
+        curr_R = abs(round(ypr[0]*180/M_PI) % 255);
+        curr_G = abs(round(ypr[1]*180/M_PI) % 255);
+        curr_B = abs(round(ypr[2]*180/M_PI) % 255);
+        setColor(curr_R,curr_G,curr_B);
+        
     }
 
 } // Loop
