@@ -60,8 +60,8 @@ void setup_leds() {
 }
 
 void setup_radio() {
-  Serial.println(F("RF24/examples/GettingStarted"));
-  Serial.println(F("*** PRESS 'T' to begin transmitting to the other node"));
+  //Serial.println(F("RF24/examples/GettingStarted"));
+  //Serial.println(F("*** PRESS 'T' to begin transmitting to the other node"));
   
   radio.begin();
 
@@ -80,6 +80,7 @@ void setup_radio() {
   
   // Start the radio listening for data
   radio.startListening();
+
 }
 
 void setup_nfc() {
@@ -147,7 +148,7 @@ void send_message() {
       {
         rec_msg[i] = 0;
       }
-      setColor(0,0,0);
+      //setColor(0,0,0);
   }else{
                                        // Grab the response, compare, and send to debugging spew
       radio.read( rec_msg, sizeof(char)*BUFFER_SIZE);
@@ -168,6 +169,14 @@ void send_message() {
       Serial.print(msg);
       Serial.print(F(", Got response "));
       Serial.println(rec_msg);
+
+      int r,g,b;
+      sscanf(rec_msg,"%i,%i,%i",&r,&g,&b);
+      snprintf(msg, sizeof(char) * BUFFER_SIZE, "%i,%i,%i", r, g, b);
+
+      Serial.println(msg);
+
+      setColor(r,g,b);
       //Serial.print(F(", Round-trip delay "));
       //Serial.print(end_time-start_time);
       //Serial.println(F(" microseconds"));
