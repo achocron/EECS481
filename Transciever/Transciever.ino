@@ -27,9 +27,13 @@ MPU6050 mpu;
 #define LED_B 6
 #define BUFFER_SIZE 16
 
-int curr_R;
-int curr_G;
-int curr_B;
+double curr_Y;
+double curr_P;
+double curr_R;
+
+int offset_R;
+int offset_G;
+int offset_B;
 
 // MPU control/status vars
 bool dmpReady = false;  // set true if DMP init was successful
@@ -226,11 +230,17 @@ void loop() {
          char string[BUFFER_SIZE];
          sprintf(string,"R: %i,G: %i,B: %i", msg_R,msg_G,msg_B);
          Serial.println(string);
+         offset_R += msg_R - curr_R;
+         offset_G += msg_G - curr_G;
+         offset_B += msg_B - curr_B;
+
+         offset_R = ((offset_R + 255) % 610) - 255;
+         offset_G = ((offset_G + 255) % 610) - 255;
+         offset_B = ((offset_B + 255) % 610) - 255;
+         
          setColor(msg_R,msg_G,msg_B);
-         delay(3000);
         }
     }
-
     // reset interrupt flag and get INT_STATUS byte
     mpuInterrupt = false;
     mpuIntStatus = mpu.getIntStatus();
@@ -262,10 +272,10 @@ void loop() {
         mpu.dmpGetGravity(&gravity, &q);
         mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
         mpu.dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
-        curr_R = abs(round(ypr[0]*180/M_PI) % 255);
-        curr_G = abs(round(ypr[1]*180/M_PI) % 255);
-        curr_B = abs(round(ypr[2]*180/M_PI) % 255);
-        setColor(curr_R,curr_G,curr_B);
+        curr_Y = ypr[0]*180/M_PI;
+        curr_P = ypr[1]*180/M_PI;
+        curr_R = ypr[2]*180/M_PI;
+        setColor(round(curr_Y)%255,round(curr_P)%255,round(curr_R)%255);
         
     }
 
