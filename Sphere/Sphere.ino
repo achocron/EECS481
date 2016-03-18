@@ -79,11 +79,12 @@ void setColor(int red, int green, int blue)
 byte addresses[][6] = {"1Node","2Node"};
 
 void setup() {
-  tol = 0.1;
+    tol = 0.1;
     // configure LED for output
     pinMode(LED_R, OUTPUT);
     pinMode(LED_G, OUTPUT);
     pinMode(LED_B, OUTPUT);
+    pinMode(3,OUTPUT); //PWM Vibrating Motor
     
     // join I2C bus (I2Cdev library doesn't do this automatically)
     #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
@@ -237,6 +238,10 @@ void loop() {
          curr_R = msg_R;
          curr_G = msg_G;
          curr_B = msg_B;
+
+         analogWrite(3,150);
+         delay(2000);
+         analogWrite(3,0);
         }
     }
     // reset interrupt flag and get INT_STATUS byte
