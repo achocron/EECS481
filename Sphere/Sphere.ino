@@ -21,19 +21,22 @@
 #endif
 
 MPU6050 mpu;
-
+#define MOTOR 3
 #define LED_R 10
 #define LED_G 9
 #define LED_B 6
 #define BUFFER_SIZE 16
 
+#define SHAKE_THRESHOLD 5000
+
+/* helper functions */
+void vibrate();
+
+/* globals */
 double last_Y;
 double last_P;
 double last_R;
-
 double tol;
-
-
 int curr_R, curr_G, curr_B;
 
 // MPU control/status vars
@@ -239,9 +242,7 @@ void loop() {
          curr_G = msg_G;
          curr_B = msg_B;
 
-         analogWrite(3,150);
-         delay(2000);
-         analogWrite(3,0);
+         vibrate();
         }
     }
     // reset interrupt flag and get INT_STATUS byte
@@ -298,7 +299,20 @@ void loop() {
         curr_B = abs(round(curr_B + diff_r) % 255);
 
         setColor(curr_R, curr_G, curr_B);
+
+        if (sqrt(aaWorld[0]*aaWorld[0] + aaWorld[1]*aaWorld[1] + aaWorld[2]*aaWorld[2]) > SHAKE_THRESHOLD) {
+          vibrate();
+        }
         
     }
 
 } // Loop
+
+
+void vibrate()
+{
+  analogWrite(MOTOR,150);
+  delay(2000);
+  analogWrite(MOTOR,0);
+}
+
