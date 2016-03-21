@@ -30,7 +30,6 @@ MPU6050 mpu;
 #define SHAKE_THRESHOLD 5000
 
 /* helper functions */
-void vibrate();
 
 /* globals */
 double last_Y;
@@ -71,6 +70,31 @@ bool radioNumber = 1;
 /* Hardware configuration: Set up nRF24L01 radio on SPI bus plus pins 7 & 8 */
 RF24 radio(7,8);
 /**********************************************************/
+/* Motor class: this should be moved into a separate file */
+class motor {
+public:
+  void motor_loop();
+  void start_vibrating();
+  
+  bool is_vibrating() 
+  { return vibrating; }
+  
+  static motor& get_instance() {
+    static motor instance = motor();
+    return instance;
+  }
+private:
+  motor() : vibrating(false), start_time(0), on(150), off(0), duration(1000)
+  {}
+
+  const unsigned int duration;
+  unsigned int start_time;
+  bool vibrating;
+
+  const int on;
+  const int off;
+};
+/* End motor class */
 
 void setColor(int red, int green, int blue)
 {
@@ -144,17 +168,17 @@ void setup() {
 
         //blink led to signal successful initialization
         setColor(0,255,0);
-        delay(500);
+        delay(100);
         setColor(0,0,0);
-        delay(500);
+        delay(100);
         setColor(0,255,0);
-        delay(500);
+        delay(100);
         setColor(0,0,0);
-        delay(500);
+        delay(100);
         setColor(0,255,0);
-        delay(500);
+        delay(100);
         setColor(0,0,0);
-        delay(500);
+        delay(100);
 
         // get expected DMP packet size for later comparison
         packetSize = mpu.dmpGetFIFOPacketSize();
@@ -187,7 +211,6 @@ void setup() {
     
     // Start the radio listening for data
     radio.startListening();
-  
 }
 
 void loop() {
@@ -204,11 +227,11 @@ void loop() {
         // if you are really paranoid you can frequently test in between other
         // stuff to see if mpuInterrupt is true, and if so, "break;" from the
         // while() loop to immediately process the MPU data
-        // .
+        // .vib
         // .
         // .
         /****************** Pong Back Role ***************************/
-
+        motor::get_instance().motor_loop();
         char message[BUFFER_SIZE];
         
         if( radio.available()){
@@ -241,8 +264,7 @@ void loop() {
          curr_R = msg_R;
          curr_G = msg_G;
          curr_B = msg_B;
-
-         vibrate();
+         motor::get_instance().start_vibrating();
         }
     }
     // reset interrupt flag and get INT_STATUS byte
@@ -300,19 +322,38 @@ void loop() {
 
         setColor(curr_R, curr_G, curr_B);
 
-        if (sqrt(aaWorld.x*aaWorld.x + aaWorld.y*aaWorld.y + aaWorld.z*aaWorld.z) > SHAKE_THRESHOLD) {
-          vibrate();
-        }
-        
     }
 
+    long x_long = aaWorld.x;
+    long y_long = aaWorld.y;
+    long z_long = aaWorld.z;
+    long xx = pow(x_long, 2);
+    long yy = pow(y_long, 2);
+    long zz = pow(z_long, 2);
+    
+    double shake_magnitude = sqrt(xx + yy + zz);
+
+  if (!motor::get_instance().is_vibrating() && shake_magnitude > SHAKE_THRESHOLD) {
+      motor::get_instance().start_vibrating();
+  }
 } // Loop
 
 
-void vibrate()
-{
-  analogWrite(MOTOR,150);
-  delay(2000);
-  analogWrite(MOTOR,0);
+/* Motor class implementation - this should be moved into another file */
+
+void motor::motor_loop() {
+  if (vibrating && (millis() - start_time) > duration) {
+      analogWrite(MOTOR, off);
+      vibrating = false;
+  }     
 }
+
+void motor::start_vibrating() { 
+  start_time = millis(); 
+  vibrating = true;
+  analogWrite(MOTOR, on);
+}
+
+/* end motor class implementation */
+
 
