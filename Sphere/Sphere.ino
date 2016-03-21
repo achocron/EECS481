@@ -300,7 +300,7 @@ void loop() {
 
         setColor(curr_R, curr_G, curr_B);
 
-        if (sqrt(aaWorld[0]*aaWorld[0] + aaWorld[1]*aaWorld[1] + aaWorld[2]*aaWorld[2]) > SHAKE_THRESHOLD) {
+        if (sqrt(aaWorld.x*aaWorld.x + aaWorld.y*aaWorld.y + aaWorld.z*aaWorld.z) > SHAKE_THRESHOLD) {
           vibrate();
         }
         
