@@ -72,7 +72,7 @@ bool radioNumber = 1;
 RF24 radio(7,8);
 /**********************************************************/
 
-Motor* motor_ptr;
+Motor motor(MOTOR);
 
 void setColor(int red, int green, int blue)
 {
@@ -84,7 +84,6 @@ void setColor(int red, int green, int blue)
 byte addresses[][6] = {"1Node","2Node"};
 
 void setup() {
-    motor_ptr = new Motor(MOTOR);
     tol = 0.1;
     // configure LED for output
     pinMode(LED_R, OUTPUT);
@@ -210,7 +209,7 @@ void loop() {
         // .
         /****************** Pong Back Role ***************************/
 
-        motor_ptr->update();
+        motor.update();
         
         char message[BUFFER_SIZE];
         
@@ -244,7 +243,7 @@ void loop() {
          curr_R = msg_R;
          curr_G = msg_G;
          curr_B = msg_B;
-         motor_ptr->start_vibrating();
+         motor.start_vibrating();
         }
     }
     // reset interrupt flag and get INT_STATUS byte
@@ -313,8 +312,8 @@ void loop() {
     
     double shake_magnitude = sqrt(xx + yy + zz);
 
-  if (!motor_ptr->is_vibrating() && shake_magnitude > SHAKE_THRESHOLD) {
-      motor_ptr->start_vibrating();
+  if (!motor.is_vibrating() && shake_magnitude > SHAKE_THRESHOLD) {
+      motor.start_vibrating();
   }
 } // Loop
 
