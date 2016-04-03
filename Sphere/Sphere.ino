@@ -1,9 +1,10 @@
-
 /*
 * Getting Started example sketch for nRF24L01+ radios
 * This is a very basic example of how to send data from one node to another
 * Updated: Dec 2014 by TMRh20
 */
+
+#include "Motor.h"
 
 #include <SPI.h>
 #include "RF24.h"
@@ -70,31 +71,8 @@ bool radioNumber = 1;
 /* Hardware configuration: Set up nRF24L01 radio on SPI bus plus pins 7 & 8 */
 RF24 radio(7,8);
 /**********************************************************/
-/* Motor class: this should be moved into a separate file */
-class motor {
-public:
-  void motor_loop();
-  void start_vibrating();
-  
-  bool is_vibrating() 
-  { return vibrating; }
-  
-  static motor& get_instance() {
-    static motor instance = motor();
-    return instance;
-  }
-private:
-  motor() : vibrating(false), start_time(0), on(150), off(0), duration(1000)
-  {}
 
-  const unsigned int duration;
-  unsigned int start_time;
-  bool vibrating;
-
-  const int on;
-  const int off;
-};
-/* End motor class */
+Motor* motor_ptr;
 
 void setColor(int red, int green, int blue)
 {
@@ -106,12 +84,12 @@ void setColor(int red, int green, int blue)
 byte addresses[][6] = {"1Node","2Node"};
 
 void setup() {
+    motor_ptr = new Motor(MOTOR);
     tol = 0.1;
     // configure LED for output
     pinMode(LED_R, OUTPUT);
     pinMode(LED_G, OUTPUT);
     pinMode(LED_B, OUTPUT);
-    pinMode(3,OUTPUT); //PWM Vibrating Motor
     
     // join I2C bus (I2Cdev library doesn't do this automatically)
     #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
@@ -231,7 +209,9 @@ void loop() {
         // .
         // .
         /****************** Pong Back Role ***************************/
-        motor::get_instance().motor_loop();
+
+        motor_ptr->update();
+        
         char message[BUFFER_SIZE];
         
         if( radio.available()){
@@ -264,7 +244,7 @@ void loop() {
          curr_R = msg_R;
          curr_G = msg_G;
          curr_B = msg_B;
-         motor::get_instance().start_vibrating();
+         motor_ptr->start_vibrating();
         }
     }
     // reset interrupt flag and get INT_STATUS byte
@@ -333,27 +313,8 @@ void loop() {
     
     double shake_magnitude = sqrt(xx + yy + zz);
 
-  if (!motor::get_instance().is_vibrating() && shake_magnitude > SHAKE_THRESHOLD) {
-      motor::get_instance().start_vibrating();
+  if (!motor_ptr->is_vibrating() && shake_magnitude > SHAKE_THRESHOLD) {
+      motor_ptr->start_vibrating();
   }
 } // Loop
-
-
-/* Motor class implementation - this should be moved into another file */
-
-void motor::motor_loop() {
-  if (vibrating && (millis() - start_time) > duration) {
-      analogWrite(MOTOR, off);
-      vibrating = false;
-  }     
-}
-
-void motor::start_vibrating() { 
-  start_time = millis(); 
-  vibrating = true;
-  analogWrite(MOTOR, on);
-}
-
-/* end motor class implementation */
-
 
