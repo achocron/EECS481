@@ -1,13 +1,9 @@
 
-
-#include <SPI.h>
-#include "RF24.h"
-
-#include <Wire.h>
-
 #include "Patch.h"
 #include "NFC_scanner.h"
 #include "Console_radio.h"
+#include <SPI.h>
+#include <Wire.h>
 
 // Patch 1
 #define NFC1_SCK  (53)
@@ -38,120 +34,32 @@ Patch patch2(NFC2_SCK, NFC2_MISO, NFC2_MOSI, NFC2_SS, PATCH2_R, PATCH2_G, PATCH2
 
 Patch* pathes[NUM_PATCHES] = { &patch1, &patch2 };
 
-#define BUFFER_SIZE 16
 #define LED_R 3
 #define LED_G 5
 #define LED_B 6
 
-/****************** User Config ***************************/
-/***      Set this radio as radio number 0 or 1         ***/
-bool radioNumber = 0;
+#define RADIO_PIN1 7
+#define RADIO_PIN2 8
 
-
-/* Hardware configuration: Set up nRF24L01 radio on SPI bus plus pins 7 & 8 */
-RF24 radio(7,8);
-
-byte addresses[][6] = {"1Node","2Node"};
-
-
-void setup_radio() {
-  //Serial.println(F("RF24/examples/GettingStarted"));
-  //Serial.println(F("*** PRESS 'T' to begin transmitting to the other node"));
-  
-  radio.begin();
-
-  // Set the PA Level low to prevent power supply related issues since this is a
- // getting_started sketch, and the likelihood of close proximity of the devices. RF24_PA_MAX is default.
-  radio.setPALevel(RF24_PA_LOW);
-  
-  // Open a writing and reading pipe on each radio, with opposite addresses
-  if(radioNumber){
-    radio.openWritingPipe(addresses[1]);
-    radio.openReadingPipe(1,addresses[0]);
-  }else{
-    radio.openWritingPipe(addresses[0]);
-    radio.openReadingPipe(1,addresses[1]);
-  }
-  
-  // Start the radio listening for data
-  radio.startListening();
-
-}
-void send_message() {
-
-  radio.stopListening();                                    // First, stop listening so we can talk.
-    
-  Serial.println(F("Now sending"));
-
-  //unsigned long start_time = micros();                             // Take the time, and send it.  This will block until complete
-  char msg[BUFFER_SIZE];
-  snprintf(msg, sizeof(char) * BUFFER_SIZE, "%i,%i,%i", curr_red, curr_green, curr_blue);
-   if (!radio.write( msg , sizeof(char)*BUFFER_SIZE )){
-     Serial.println(F("failed"));
-   }
-      
-  radio.startListening();                                    // Now, continue listening
-  
-  unsigned long started_waiting_at = micros();               // Set up a timeout period, get the current microseconds
-  boolean timeout = false;                                   // Set up a variable to indicate if a response was received or not
-  
-  while ( ! radio.available() ){                             // While nothing is received
-    if (micros() - started_waiting_at > 200000 ){            // If waited longer than 200ms, indicate timeout and exit while loop
-        timeout = true;
-        break;
-    }      
-  }
-  
-  char rec_msg[BUFFER_SIZE] = "";
-  if ( timeout ){                                             // Describe the results
-      Serial.println(F("Failed, response timed out."));
-      Serial.println(rec_msg);
-      //Serial.println(strcmp(rec_msg,"hi"));
-      for(unsigned int i = 0;i < BUFFER_SIZE; i++)
-      {
-        rec_msg[i] = 0;
-      }
-      //setColor(0,0,0);
-  }else{
-                                       // Grab the response, compare, and send to debugging spew
-      radio.read( rec_msg, sizeof(char)*BUFFER_SIZE);
-
-      // Spew it
-      Serial.print(F("Sent "));
-      Serial.print(msg);
-      Serial.print(F(", Got response "));
-      Serial.println(rec_msg);
-
-      int r,g,b;
-      sscanf(rec_msg,"%i,%i,%i",&r,&g,&b);
-      snprintf(msg, sizeof(char) * BUFFER_SIZE, "%i,%i,%i", r, g, b);
-
-      Serial.println(msg);
-
-      setColor(r,g,b);
-  }
-}
+Console_radio radio(RADIO_PIN1, RADIO_PIN2);
 
 void setup() {
 
   Serial.begin(115200);
 
+  radio.init();
+
   for (int i = 0; i < NUM_PATCHES; ++i) {
     pathes[i]->init();
   }
-
-  //setup_radio();
-
 }
 
 
 
 void loop() {
-
   for (int i = 0; i < NUM_PATCHES; ++i) {
-    pathes[i]->loop();
+    pathes[i]->loop(radio);
   }
-
 } // Loop
 
 

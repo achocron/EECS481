@@ -1,4 +1,3 @@
-
 #include "NFC_scanner.h"
 
 #include <Adafruit_PN532.h>

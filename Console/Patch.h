@@ -6,17 +6,16 @@
 #include "Console_radio.h"
 
 class Patch {
-
 public:
 	//constructor
 	Patch(int sck_, int miso_, int mosi_, int ss_, int LED_R_, int LED_G_, int LED_B_);
 
-  // call init functions of member variables
-  void init();
+ 	// call init functions of member variables
+  	void init();
 
 	void loop(Console_radio& radio);
 
-  void setColor(int red, int green, int blue);
+  	void setColor(int red, int green, int blue);
 
 private:
 	LED leds;

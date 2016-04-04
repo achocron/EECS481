@@ -2,6 +2,7 @@
 #define LED_H
 
 #include "Arduino.h"
+#include "Color.h"
 
 class LED {
 public:
@@ -16,33 +17,38 @@ public:
     analogWrite(LED_G, 255-green);
     analogWrite(LED_B, 255-blue);
 
-    curr_R = red;
-    curr_G = green;
-    curr_B = blue;
+    current_color.set(red, green, blue);
   }
 
-  int get_curr_R() {
-    return curr_R;
+  void setColor(const Color& color) {
+    analogWrite(LED_R, 255-color.r_value());
+    analogWrite(LED_G, 255-color.g_value());
+    analogWrite(LED_B, 255-color.b_value());
+
+    current_color = color;
   }
 
-  int get_curr_G() {
-    return curr_G;
-  }
 
-  int get_curr_B() {
-    return curr_B;
-  }
+  Color get_current_color() 
+  { return current_color; }
 
-  
+  void blink(Color& blink_color, int num_times) {
+    int delay_time = 200;
+    Color off_color(0,0,0);
+    for (int i = 0; i < num_times; ++i) {
+      setColor(green_color);
+      delay(delay_time);
+      setColor(off_color);
+      delay(delay_time);
+    }
+  }
 
 private:
   const int LED_R;
   const int LED_G;
   const int LED_B;
 
-  int curr_R;
-  int curr_G;
-  int curr_B;
+  Color current_color;
 };
 
 #endif
