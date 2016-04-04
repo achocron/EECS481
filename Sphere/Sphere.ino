@@ -6,6 +6,7 @@
 
 #include "Motor.h"
 #include "Accelerometer.h"
+#include "LED.h"
 
 #include <SPI.h>
 #include "RF24.h"
@@ -25,7 +26,6 @@ double last_Y;
 double last_P;
 double last_R;
 double tol;
-int curr_R, curr_G, curr_B;
 
 /****************** User Config ***************************/
 /***      Set this radio as radio number 0 or 1         ***/
@@ -37,16 +37,10 @@ RF24 radio(7,8);
 
 Motor motor(MOTOR);
 Accelerometer accelerometer;
+LED ballLights(LED_R,LED_G,LED_B);
 
 void dmpDataReady() {
   accelerometer.mpuInterrupt = true;
-}
-
-void setColor(int red, int green, int blue)
-{
-    analogWrite(LED_R, 255-red);
-    analogWrite(LED_G, 255-green);
-    analogWrite(LED_B, 255-blue);
 }
 
 byte addresses[][6] = {"1Node","2Node"};
@@ -57,26 +51,21 @@ void setup() {
     attachInterrupt(0,dmpDataReady,RISING);
     accelerometer.init2();
     tol = 0.1;
-    // configure LED for output
-    pinMode(LED_R, OUTPUT);
-    pinMode(LED_G, OUTPUT);
-    pinMode(LED_B, OUTPUT);
 
-    
     if(accelerometer.constructed_successfully)
     {
       //blink led to signal successful initialization
-      setColor(0,255,0);
+      ballLights.setColor(0,255,0);
       delay(100);
-      setColor(0,0,0);
+      ballLights.setColor(0,0,0);
       delay(100);
-      setColor(0,255,0);
+      ballLights.setColor(0,255,0);
       delay(100);
-      setColor(0,0,0);
+      ballLights.setColor(0,0,0);
       delay(100);
-      setColor(0,255,0);
+      ballLights.setColor(0,255,0);
       delay(100);
-      setColor(0,0,0);
+      ballLights.setColor(0,0,0);
       delay(100);
     }
     
@@ -131,7 +120,7 @@ void loop() {
         
          radio.stopListening();                                        // First, stop listening so we can talk
          char message_back[BUFFER_SIZE];
-         snprintf(message_back, BUFFER_SIZE*sizeof(char), "%i,%i,%i", curr_R, curr_G, curr_B);
+         snprintf(message_back, BUFFER_SIZE*sizeof(char), "%i,%i,%i", ballLights.get_curr_R(), ballLights.get_curr_G(), ballLights.get_curr_B());
          
          radio.write(message_back, sizeof(char) * BUFFER_SIZE );              // Send the final one back.      
          radio.startListening();                                       // Now, resume listening so we catch the next packets.     
@@ -149,10 +138,7 @@ void loop() {
          sprintf(string,"R: %i,G: %i,B: %i", msg_R,msg_G,msg_B);
          Serial.println(string);
 
-         setColor(msg_R,msg_G,msg_B);
-         curr_R = msg_R;
-         curr_G = msg_G;
-         curr_B = msg_B;
+         ballLights.setColor(msg_R,msg_G,msg_B);
          motor.start_vibrating();
         }
     }
@@ -174,12 +160,8 @@ void loop() {
     last_Y = accelerometer.getYaw();
     last_P = accelerometer.getPitch();
     last_R = accelerometer.getRoll();
-     
-    curr_R = abs(round(curr_R + diff_y) % 255);
-    curr_G = abs(round(curr_G + diff_p) % 255);
-    curr_B = abs(round(curr_B + diff_r) % 255);
-
-    setColor(curr_R, curr_G, curr_B);
+    
+    ballLights.setColor(abs(round(ballLights.get_curr_R() + diff_y) % 255), abs(round(ballLights.get_curr_G() + diff_p) % 255), abs(round(ballLights.get_curr_B() + diff_r) % 255));
     
     double shake_magnitude = accelerometer.getShakeMagnitude();
 
