@@ -5,23 +5,11 @@
 */
 
 #include "Motor.h"
+#include "Accelerometer.h"
 
 #include <SPI.h>
 #include "RF24.h"
-// I2Cdev and MPU6050 must be installed as libraries, or else the .cpp/.h files
-// for both classes must be in the include path of your project
-#include "I2Cdev.h"
 
-#include "MPU6050_6Axis_MotionApps20.h"
-//#include "MPU6050.h" // not necessary if using MotionApps include file
-
-// Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
-// is used in I2Cdev.h
-#if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-    #include "Wire.h"
-#endif
-
-MPU6050 mpu;
 #define MOTOR 3
 #define LED_R 10
 #define LED_G 9
@@ -39,31 +27,6 @@ double last_R;
 double tol;
 int curr_R, curr_G, curr_B;
 
-// MPU control/status vars
-bool dmpReady = false;  // set true if DMP init was successful
-uint8_t mpuIntStatus;   // holds actual interrupt status byte from MPU
-uint8_t devStatus;      // return status after each device operation (0 = success, !0 = error)
-uint16_t packetSize;    // expected DMP packet size (default is 42 bytes)
-uint16_t fifoCount;     // count of all bytes currently in FIFO
-uint8_t fifoBuffer[64]; // FIFO storage buffer
-
-// orientation/motion vars
-Quaternion q;           // [w, x, y, z]         quaternion container
-VectorInt16 aa;         // [x, y, z]            accel sensor measurements
-VectorInt16 aaReal;     // [x, y, z]            gravity-free accel sensor measurements
-VectorInt16 aaWorld;    // [x, y, z]            world-frame accel sensor measurements
-VectorFloat gravity;    // [x, y, z]            gravity vector
-float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
-
-// ================================================================
-// ===               INTERRUPT DETECTION ROUTINE                ===
-// ================================================================
-
-volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
-void dmpDataReady() {
-    mpuInterrupt = true;
-}
-
 /****************** User Config ***************************/
 /***      Set this radio as radio number 0 or 1         ***/
 bool radioNumber = 1;
@@ -73,6 +36,11 @@ RF24 radio(7,8);
 /**********************************************************/
 
 Motor motor(MOTOR);
+Accelerometer accelerometer;
+
+void dmpDataReady() {
+  accelerometer.mpuInterrupt = true;
+}
 
 void setColor(int red, int green, int blue)
 {
@@ -84,93 +52,35 @@ void setColor(int red, int green, int blue)
 byte addresses[][6] = {"1Node","2Node"};
 
 void setup() {
+
+    accelerometer.init1();
+    attachInterrupt(0,dmpDataReady,RISING);
+    accelerometer.init2();
     tol = 0.1;
     // configure LED for output
     pinMode(LED_R, OUTPUT);
     pinMode(LED_G, OUTPUT);
     pinMode(LED_B, OUTPUT);
+
     
-    // join I2C bus (I2Cdev library doesn't do this automatically)
-    #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-        Wire.begin();
-        TWBR = 24; // 400kHz I2C clock (200kHz if CPU is 8MHz). Comment this line if having compilation difficulties with TWBR.
-    #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
-        Fastwire::setup(400, true);
-    #endif
-
-    // initialize serial communication
-    // (115200 chosen because it is required for Teapot Demo output, but it's
-    // really up to you depending on your project)
-    Serial.begin(115200);
-    while (!Serial); // wait for Leonardo enumeration, others continue immediately
-
-    // NOTE: 8MHz or slower host processors, like the Teensy @ 3.3v or Ardunio
-    // Pro Mini running at 3.3v, cannot handle this baud rate reliably due to
-    // the baud timing being too misaligned with processor ticks. You must use
-    // 38400 or slower in these cases, or use some kind of external separate
-    // crystal solution for the UART timer.
-
-    // initialize device
-    Serial.println(F("Initializing I2C devices..."));
-    mpu.initialize();
-
-    // verify connection
-    Serial.println(F("Testing device connections..."));
-    Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
-
-    // load and configure the DMP
-    Serial.println(F("Initializing DMP..."));
-    devStatus = mpu.dmpInitialize();
-
-    // supply your own gyro offsets here, scaled for min sensitivity
-    mpu.setXGyroOffset(220);
-    mpu.setYGyroOffset(76);
-    mpu.setZGyroOffset(-85);
-    mpu.setZAccelOffset(1788); // 1688 factory default for my test chip
-
-    // make sure it worked (returns 0 if so)
-    if (devStatus == 0) {
-        // turn on the DMP, now that it's ready
-        Serial.println(F("Enabling DMP..."));
-        mpu.setDMPEnabled(true);
-
-        // enable Arduino interrupt detection
-        Serial.println(F("Enabling interrupt detection (Arduino external interrupt 0)..."));
-        attachInterrupt(0, dmpDataReady, RISING);
-        mpuIntStatus = mpu.getIntStatus();
-
-        // set our DMP Ready flag so the main loop() function knows it's okay to use it
-        Serial.println(F("DMP ready! Waiting for first interrupt..."));
-        dmpReady = true;
-
-        //blink led to signal successful initialization
-        setColor(0,255,0);
-        delay(100);
-        setColor(0,0,0);
-        delay(100);
-        setColor(0,255,0);
-        delay(100);
-        setColor(0,0,0);
-        delay(100);
-        setColor(0,255,0);
-        delay(100);
-        setColor(0,0,0);
-        delay(100);
-
-        // get expected DMP packet size for later comparison
-        packetSize = mpu.dmpGetFIFOPacketSize();
-    } else {
-        // ERROR!
-        // 1 = initial memory load failed
-        // 2 = DMP configuration updates failed
-        // (if it's going to break, usually the code will be 1)
-        Serial.print(F("DMP Initialization failed (code "));
-        Serial.print(devStatus);
-        Serial.println(F(")"));
+    if(accelerometer.constructed_successfully)
+    {
+      //blink led to signal successful initialization
+      setColor(0,255,0);
+      delay(100);
+      setColor(0,0,0);
+      delay(100);
+      setColor(0,255,0);
+      delay(100);
+      setColor(0,0,0);
+      delay(100);
+      setColor(0,255,0);
+      delay(100);
+      setColor(0,0,0);
+      delay(100);
     }
     
-    
-    
+
     radio.begin();
     
     // Set the PA Level low to prevent power supply related issues since this is a
@@ -192,11 +102,11 @@ void setup() {
 
 void loop() {
 
-   // if programming failed, don't try to do anything
-    if (!dmpReady) return;
+    // if programming failed, don't try to do anything
+    if (!accelerometer.getDmpReady()) return;
 
     // wait for MPU interrupt or extra packet(s) available
-    while (!mpuInterrupt && fifoCount < packetSize) {
+    while (accelerometer.isFree()) {
         // other program behavior stuff here
         // .
         // .
@@ -246,71 +156,32 @@ void loop() {
          motor.start_vibrating();
         }
     }
-    // reset interrupt flag and get INT_STATUS byte
-    mpuInterrupt = false;
-    mpuIntStatus = mpu.getIntStatus();
+    accelerometer.operate();
 
-    // get current FIFO count
-    fifoCount = mpu.getFIFOCount();
-
-    // check for overflow (this should never happen unless our code is too inefficient)
-    if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
-        // reset so we can continue cleanly
-        mpu.resetFIFO();
-        Serial.println(F("FIFO overflow!"));
-
-    // otherwise, check for DMP data ready interrupt (this should happen frequently)
-    } else if (mpuIntStatus & 0x02) {
-        // wait for correct available data length, should be a VERY short wait
-        while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
-
-        // read a packet from FIFO
-        mpu.getFIFOBytes(fifoBuffer, packetSize);
-        
-        // track FIFO count here in case there is > 1 packet available
-        // (this lets us immediately read more without waiting for an interrupt)
-        fifoCount -= packetSize;
-        mpu.dmpGetQuaternion(&q, fifoBuffer);
-        mpu.dmpGetGravity(&gravity, &q);
-        mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-        mpu.dmpGetAccel(&aa, fifoBuffer);
-        mpu.dmpGetGravity(&gravity, &q);
-        mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
-        mpu.dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
-
-        static bool changed_once = false;
-        if (!changed_once) {
-          last_Y = ypr[0]*180/M_PI;
-          last_P = ypr[1]*180/M_PI;
-          last_R = ypr[2]*180/M_PI;
-          changed_once = true;
-          return;
-        }
-        
-        double diff_y = last_Y - ypr[0]*180/M_PI;
-        double diff_p = last_P - ypr[1]*180/M_PI;
-        double diff_r = last_R - ypr[2]*180/M_PI;
-
-        last_Y = ypr[0]*180/M_PI;
-        last_P = ypr[1]*180/M_PI;
-        last_R = ypr[2]*180/M_PI;
-         
-        curr_R = abs(round(curr_R + diff_y) % 255);
-        curr_G = abs(round(curr_G + diff_p) % 255);
-        curr_B = abs(round(curr_B + diff_r) % 255);
-
-        setColor(curr_R, curr_G, curr_B);
-
+    static bool changed_once = false;
+    if (!changed_once) {
+      last_Y = accelerometer.getYaw();
+      last_P = accelerometer.getPitch();
+      last_R = accelerometer.getRoll();
+      changed_once = true;
+      return;
     }
-
-    long x_long = aaWorld.x;
-    long y_long = aaWorld.y;
-    long z_long = aaWorld.z;
-    long xx = pow(x_long, 2);
-    long yy = pow(y_long, 2);
-    long zz = pow(z_long, 2);
     
-    double shake_magnitude = sqrt(xx + yy + zz);
+    double diff_y = last_Y - accelerometer.getYaw();
+    double diff_p = last_P - accelerometer.getPitch();
+    double diff_r = last_R - accelerometer.getRoll();
+
+    last_Y = accelerometer.getYaw();
+    last_P = accelerometer.getPitch();
+    last_R = accelerometer.getRoll();
+     
+    curr_R = abs(round(curr_R + diff_y) % 255);
+    curr_G = abs(round(curr_G + diff_p) % 255);
+    curr_B = abs(round(curr_B + diff_r) % 255);
+
+    setColor(curr_R, curr_G, curr_B);
+    
+    double shake_magnitude = accelerometer.getShakeMagnitude();
 
   if (!motor.is_vibrating() && shake_magnitude > SHAKE_THRESHOLD) {
       motor.start_vibrating();
