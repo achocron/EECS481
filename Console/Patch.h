@@ -9,22 +9,18 @@ class Patch {
 
 public:
 	//constructor
-	Patch(int patch_id_, int sck_, int miso_, int mosi_, int ss_, int LED_R_, int LED_G_, int LED_B_) : 
-	patch_id(patch_id_),patch_scanner(sck_,miso_,mosi_,ss_),patch_lights(LED_R_,LED_G_,LED_B_)
-	{
+	Patch(int sck_, int miso_, int mosi_, int ss_, int LED_R_, int LED_G_, int LED_B_);
 
-	}
+  // call init functions of member variables
+  void init();
 
-	void loop(Console_radio& radio)
-	{
-		//do patch things
-	}
+	void loop(Console_radio& radio);
+
+  void setColor(int red, int green, int blue);
 
 private:
-	const int patch_id;
-	LED patch_lights;
-	NFC_scanner patch_scanner;
-
+	LED leds;
+	NFC_scanner scanner;
 };
 
 #endif

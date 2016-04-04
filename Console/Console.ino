@@ -5,21 +5,38 @@
 
 #include <Wire.h>
 
+#include "Patch.h"
 #include "NFC_scanner.h"
+#include "Console_radio.h"
 
+// Patch 1
 #define NFC1_SCK  (53)
 #define NFC1_MOSI (49)
 #define NFC1_SS   (47)
 #define NFC1_MISO (51)
 
+#define PATCH1_R    (2)
+#define PATCH1_G    (3)
+#define PATCH1_B    (4)
+
+
+// Patch 2
 #define NFC2_SCK  (52)
 #define NFC2_MOSI (48)
 #define NFC2_SS   (46)
 #define NFC2_MISO (50)
 
+#define PATCH2_R    (5)
+#define PATCH2_G    (6)
+#define PATCH2_B    (7)
 
-NFC_scanner nfc1(NFC1_SCK, NFC1_MISO, NFC1_MOSI, NFC1_SS);
-NFC_scanner nfc2(NFC2_SCK, NFC2_MISO, NFC2_MOSI, NFC2_SS);
+
+#define NUM_PATCHES 2
+
+Patch patch1(NFC1_SCK, NFC1_MISO, NFC1_MOSI, NFC1_SS, PATCH1_R, PATCH1_G, PATCH1_B);
+Patch patch2(NFC2_SCK, NFC2_MISO, NFC2_MOSI, NFC2_SS, PATCH2_R, PATCH2_G, PATCH2_B);
+
+Patch* pathes[NUM_PATCHES] = { &patch1, &patch2 };
 
 #define BUFFER_SIZE 16
 #define LED_R 3
@@ -30,32 +47,12 @@ NFC_scanner nfc2(NFC2_SCK, NFC2_MISO, NFC2_MOSI, NFC2_SS);
 /***      Set this radio as radio number 0 or 1         ***/
 bool radioNumber = 0;
 
-int curr_red;
-int curr_green;
-int curr_blue;
 
 /* Hardware configuration: Set up nRF24L01 radio on SPI bus plus pins 7 & 8 */
 RF24 radio(7,8);
 
 byte addresses[][6] = {"1Node","2Node"};
 
-void setColor(int red, int green, int blue)
-{
-    curr_red = red;
-    curr_green = green;
-    curr_blue = blue;
-    analogWrite(LED_R, 255-red);
-    analogWrite(LED_G, 255-green);
-    analogWrite(LED_B, 255-blue);
-}
-
-void setup_leds() {
-  // configure LED for output
-  pinMode(LED_R, OUTPUT);
-  pinMode(LED_G, OUTPUT);
-  pinMode(LED_B, OUTPUT);
-  setColor(5, 5, 5);
-}
 
 void setup_radio() {
   //Serial.println(F("RF24/examples/GettingStarted"));
@@ -80,21 +77,6 @@ void setup_radio() {
   radio.startListening();
 
 }
-
-
-void setup() {
-
-  Serial.begin(115200);
-
-  nfc1.init();
-  nfc2.init();
-  //setup_leds();
-
-  //setup_radio();
-
-  //setup_nfc();
-}
-
 void send_message() {
 
   radio.stopListening();                                    // First, stop listening so we can talk.
@@ -150,23 +132,26 @@ void send_message() {
   }
 }
 
+void setup() {
+
+  Serial.begin(115200);
+
+  for (int i = 0; i < NUM_PATCHES; ++i) {
+    pathes[i]->init();
+  }
+
+  //setup_radio();
+
+}
+
+
+
 void loop() {
 
-  //loop_nfc();
-  int id_scanned1;
-  bool success1 = nfc1.scan_for_id(&id_scanned1);
-  if (success1) {
-    Serial.println("SUCCESS 1");
+  for (int i = 0; i < NUM_PATCHES; ++i) {
+    pathes[i]->loop();
   }
 
-  int id_scanned2;
-  bool success2 = nfc2.scan_for_id(&id_scanned2);
-  if (success2) {
-    Serial.println("SUCCESS 2");
-  }
-
-
-  
 } // Loop
 
 
