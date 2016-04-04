@@ -6,22 +6,22 @@
 static  MPU6050 mpu;
 
 
-  // MPU control/status vars
-  static bool dmpReady = false;  // set true if DMP init was successful
-  static uint8_t mpuIntStatus;   // holds actual interrupt status byte from MPU
-  static uint8_t devStatus;      // return status after each device operation (0 = success, !0 = error)
-  static uint16_t packetSize;    // expected DMP packet size (default is 42 bytes)
-  static uint16_t fifoCount;     // count of all bytes currently in FIFO
-  static uint8_t fifoBuffer[64]; // FIFO storage buffer
+// MPU control/status vars
+static bool dmpReady = false;  // set true if DMP init was successful
+static uint8_t mpuIntStatus;   // holds actual interrupt status byte from MPU
+static uint8_t devStatus;      // return status after each device operation (0 = success, !0 = error)
+static uint16_t packetSize;    // expected DMP packet size (default is 42 bytes)
+static uint16_t fifoCount;     // count of all bytes currently in FIFO
+static uint8_t fifoBuffer[64]; // FIFO storage buffer
 
-  static float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
+static float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 
-  // orientation/motion vars
- static Quaternion q;           // [w, x, y, z]         quaternion container
- static VectorInt16 aa;         // [x, y, z]            accel sensor measurements
- static VectorInt16 aaReal;     // [x, y, z]            gravity-free accel sensor measurements
- static VectorInt16 aaWorld;    // [x, y, z]            world-frame accel sensor measurements
- static VectorFloat gravity;    // [x, y, z]            gravity vector
+// orientation/motion vars
+static Quaternion q;           // [w, x, y, z]         quaternion container
+static VectorInt16 aa;         // [x, y, z]            accel sensor measurements
+static VectorInt16 aaReal;     // [x, y, z]            gravity-free accel sensor measurements
+static VectorInt16 aaWorld;    // [x, y, z]            world-frame accel sensor measurements
+static VectorFloat gravity;    // [x, y, z]            gravity vector
 
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
 // is used in I2Cdev.h
