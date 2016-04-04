@@ -11,9 +11,9 @@ public:
 
   // constructor
   NFC_scanner(int sck_, int miso_, int mosi_, int ss_) :
-    nfc(sck_, miso_, mosi_, ss_)
+  nfc(sck_, miso_, mosi_, ss_)
   {
-    
+
   }
 
   void init()
@@ -37,13 +37,13 @@ public:
     Serial.println("Waiting for an ISO14443A Card ...");
   }
 
-  void loop()
+  
+  bool scan_for_id(int* id_out)
   {
-    Serial.println("LOOP");
     uint8_t success;
     uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };  // Buffer to store the returned UID
     uint8_t uidLength;                        // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
-      
+
     // Wait for an ISO14443A type cards (Mifare, etc.).  When one is found
     // 'uid' will be populated with the UID, and uidLength will indicate
     // if the uid is 4 bytes (Mifare Classic) or 7 bytes (Mifare Ultralight)
@@ -58,7 +58,12 @@ public:
       Serial.print("  UID Value: ");
       nfc.PrintHex(uid, uidLength);
       Serial.println("");
-      
+
+      uint32_t uid_full;
+      uid_full = combine_shorts(uid);
+      *id_out = get_id_from_uid(uid_full);
+      return true;
+      /* I THINK WE CAN GET RID OF ALL OF THIS BUT IDK
       if (uidLength == 4)
       {
         // We probably have a Mifare Classic card ... 
@@ -107,12 +112,44 @@ public:
           Serial.println("Ooops ... authentication failed: Try another key?");
         }
       }
+      */
+    } 
+    else {
+      return false;
     }
   }
 
 
 
 private:
+
+  static const uint32_t[] = {23, 24 };
+
+
+  // combine four uint8_t's into a single uint32_t
+  static uint32_t combine_shorts(uint8_t* uid_arr)
+  {
+    uint32_t ret = 0;
+
+    for (int i = 0; i < 4; i++) {
+      ret |= uid_arr[i];
+
+      // dont shift after last uint8_t
+      if (i != 4 - 1) {
+        ret <<= 8;  
+      }
+    }
+    Serial.print("shorts combined into: ");
+    Serial.println(ret);
+    return ret;
+  }
+
+  static int get_id_from_uid(uint32_t uid)
+  {
+    return 1;
+  }
+
+  // original PN532 driver library
   Adafruit_PN532 nfc;
 };
 
