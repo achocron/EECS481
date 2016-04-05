@@ -17,13 +17,13 @@ Patch::Patch(int sck_, int miso_, int mosi_, int ss_, int LED_R_, int LED_G_, in
 void Patch::init()
 {
   scanner.init();
-  setColor(5, 5, 5);
+  setColor(Color(5,5,5));
 }
 
 void Patch::loop(Console_radio& radio)
 {
   int id_scanned;
-  bool success = scanner.scan_for_id(&id_scanned1);
+  bool success = scanner.scan_for_id(&id_scanned);
 
   if (success) {
   	Serial.println("successfully read NFC tag");
@@ -34,7 +34,6 @@ void Patch::loop(Console_radio& radio)
   		Serial.println("successfully sent color");
   		Color received_color;
   		bool received = radio.receive_color(received_color, id_scanned);
-  		
   		if (received) {
   			Serial.println("successfully received color");
   			setColor(received_color);
@@ -47,3 +46,4 @@ void Patch::setColor(const Color& color)
 {
   leds.setColor(color);
 }
+

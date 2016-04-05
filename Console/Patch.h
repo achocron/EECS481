@@ -5,6 +5,8 @@
 #include "NFC_scanner.h"
 #include "Console_radio.h"
 
+class Color;
+
 class Patch {
 public:
 	//constructor
@@ -15,7 +17,8 @@ public:
 
 	void loop(Console_radio& radio);
 
-  	void setColor(int red, int green, int blue);
+    void setColor(const Color&);
+
 
 private:
 	LED leds;

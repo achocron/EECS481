@@ -6,6 +6,7 @@ void Console_radio::init()
 {
 	radio.begin();
   
+  radio.openWritingPipe(addresses[sphereA_id_c]);
 	radio.openReadingPipe(1, addresses[console_id_c]);
 
 	// Set the PA Level low to prevent power supply related issues since this is a
@@ -17,7 +18,7 @@ void Console_radio::init()
 
 bool Console_radio::send_color(const Color& color, int sphere_id)
 {
-  radio.openWritingPipe(addresses[sphere_id]);
+  radio.stopListening();
 	
 	if (!radio.write(color.c_str(), sizeof(char)*buf_size_c)) {
    		return false;
