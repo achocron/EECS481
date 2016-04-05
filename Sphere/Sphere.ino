@@ -17,10 +17,11 @@
 double last_Y;
 double last_P;
 double last_R;
-double tol;
 
-#define RADIO_PIN1 7
-#define RADIO_PIN2 8
+const double tol = 0.1;
+
+#define RADIO_CE 7
+#define RADIO_CS 8
 
 Sphere_radio radio(RADIO_PIN1,RADIO_PIN2);
 Motor motor(MOTOR);
@@ -37,8 +38,7 @@ void setup() {
     accelerometer.init1();
     attachInterrupt(0,dmpDataReady,RISING);
     accelerometer.init2();
-    tol = 0.1;
-
+ 
     if(accelerometer.constructed_successfully) {
       Color green_color(0,255,0);
       //blink led to signal successful initialization
