@@ -21,9 +21,9 @@ public:
   }
 
   void setColor(const Color& color) {
-    analogWrite(LED_R, 255-color.r_value());
-    analogWrite(LED_G, 255-color.g_value());
-    analogWrite(LED_B, 255-color.b_value());
+    analogWrite(LED_R, 255-color.r_val());
+    analogWrite(LED_G, 255-color.g_val());
+    analogWrite(LED_B, 255-color.b_val());
 
     current_color = color;
   }
@@ -36,7 +36,7 @@ public:
     int delay_time = 200;
     Color off_color(0,0,0);
     for (int i = 0; i < num_times; ++i) {
-      setColor(green_color);
+      setColor(blink_color);
       delay(delay_time);
       setColor(off_color);
       delay(delay_time);

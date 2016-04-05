@@ -60,7 +60,7 @@ void loop() {
         bool received_color = radio.receive_color(color_received);
         if (received_color) {
           radio.send_color(ballLights.get_current_color());
-          radio.setColor(color_received);
+          ballLights.setColor(color_received);
           motor.start_vibrating();
         }
     }
@@ -82,10 +82,10 @@ void loop() {
     last_Y = accelerometer.getYaw();
     last_P = accelerometer.getPitch();
     last_R = accelerometer.getRoll();
-    
-    Color next_color(abs(round(ballLights.get_curr_R() + diff_y) % 255),
-                     abs(round(ballLights.get_curr_G() + diff_p) % 255),
-                     abs(round(ballLights.get_curr_B() + diff_r) % 255));
+
+    Color next_color(abs(round(ballLights.get_current_color().r_val() + diff_y) % 255),
+                     abs(round(ballLights.get_current_color().g_val() + diff_p) % 255),
+                     abs(round(ballLights.get_current_color().b_val() + diff_r) % 255));
 
     ballLights.setColor(next_color);
     
