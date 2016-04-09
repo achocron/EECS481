@@ -29,10 +29,19 @@
 
 #define NUM_PATCHES 2
 
+
+/*
+	We decided that it makes sense for the ball and console to each have a dedicated game mode. 
+	Console and ball both have a game mode. When ball is turned on, it asks the console what mode to be in.
+	When the Console's mode is changed, it notifies all the balls to change modes.
+	When a ball asks the console what mode it's in, and the console is off, the ball should timeout and just go
+	into regular mode.
+*/ 
+
 Patch patch1(NFC1_SCK, NFC1_MISO, NFC1_MOSI, NFC1_SS, PATCH1_R, PATCH1_G, PATCH1_B);
 Patch patch2(NFC2_SCK, NFC2_MISO, NFC2_MOSI, NFC2_SS, PATCH2_R, PATCH2_G, PATCH2_B);
 
-Patch* pathes[NUM_PATCHES] = { &patch1, &patch2 };
+Patch* patches[NUM_PATCHES] = { &patch1, &patch2 };
 
 #define LED_R 3
 #define LED_G 5
@@ -50,7 +59,7 @@ void setup() {
   radio.init();
 
   for (int i = 0; i < NUM_PATCHES; ++i) {
-    pathes[i]->init();
+    patches[i]->init();
   }
 }
 
@@ -58,8 +67,12 @@ void setup() {
 
 void loop() {
   for (int i = 0; i < NUM_PATCHES; ++i) {
-    pathes[i]->loop(radio);
+    patches[i]->loop(radio);
   }
 } // Loop
+
+
+
+
 
 
