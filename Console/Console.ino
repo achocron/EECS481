@@ -6,10 +6,10 @@
 #include <Wire.h>
 
 // Patch 1
-#define NFC1_SCK  (53)
-#define NFC1_MOSI (49)
-#define NFC1_SS   (47)
-#define NFC1_MISO (51)
+#define NFC1_SCK  (45)
+#define NFC1_MOSI (41)
+#define NFC1_SS   (39)
+#define NFC1_MISO (43)
 
 #define PATCH1_R    (2)
 #define PATCH1_G    (3)
@@ -17,10 +17,10 @@
 
 
 // Patch 2
-#define NFC2_SCK  (52)
-#define NFC2_MOSI (48)
-#define NFC2_SS   (46)
-#define NFC2_MISO (50)
+#define NFC2_SCK  (44)
+#define NFC2_MOSI (40)
+#define NFC2_SS   (38)
+#define NFC2_MISO (42)
 
 #define PATCH2_R    (5)
 #define PATCH2_G    (6)
@@ -38,10 +38,10 @@ Patch* pathes[NUM_PATCHES] = { &patch1, &patch2 };
 #define LED_G 5
 #define LED_B 6
 
-#define RADIO_PIN1 7
-#define RADIO_PIN2 8
+#define RADIO_CE 9
+#define RADIO_CS 8
 
-Console_radio radio(RADIO_PIN1, RADIO_PIN2);
+Console_radio radio(RADIO_CE, RADIO_CS);
 
 void setup() {
 
