@@ -5,7 +5,7 @@
 #include "NFC_scanner.h"
 #include "Console_radio.h"
 #include "Arduino.h"
-
+#include "Radio_consts.h"
 
 // constructor
 Patch::Patch(int sck_, int miso_, int mosi_, int ss_, int LED_R_, int LED_G_, int LED_B_) : 
@@ -20,7 +20,7 @@ void Patch::init()
   setColor(Color(5,5,5));
 }
 
-void Patch::loop(Console_radio& radio)
+bool Patch::loop(Console_radio& radio)
 {
   int id_scanned;
   bool success = scanner.scan_for_id(&id_scanned);
@@ -39,7 +39,9 @@ void Patch::loop(Console_radio& radio)
   			setColor(received_color);
   		}
   	}
+   return true;
   }
+  return false;
 }
 
 void Patch::setColor(const Color& color)

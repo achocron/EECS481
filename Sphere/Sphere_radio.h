@@ -12,6 +12,7 @@ public:
 	void init();
 	bool send_color(const Color&);
 	bool receive_color(Color&);
+	bool query_mode();
 private:
 	RF24 radio;
 };

@@ -65,6 +65,11 @@ bool NFC_scanner::scan_for_id(int* id_out)
       uint32_t uid_full;
       uid_full = combine_shorts(uid);
       *id_out = get_id_from_uid(uid_full);
+            Serial.println("***");
+
+      Serial.println(*id_out);
+                  Serial.println("***");
+
       return true;
     } 
     else {

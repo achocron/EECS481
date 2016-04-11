@@ -6,7 +6,7 @@
 
 #include <Adafruit_PN532.h>
 
-#define REPEAT_DELAY 5000 // 5 seconds
+#define REPEAT_DELAY 2000 // 2 seconds
 #define SCAN_DELAY 30 // 30 ms
 
 class NFC_scanner {

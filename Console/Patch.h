@@ -4,8 +4,7 @@
 #include "LED.h"
 #include "NFC_scanner.h"
 #include "Console_radio.h"
-
-class Color;
+#include "Color.h"
 
 class Patch {
 public:
@@ -15,10 +14,10 @@ public:
  	// call init functions of member variables
   	void init();
 
-	void loop(Console_radio& radio);
-
-    void setColor(const Color&);
-
+	bool loop(Console_radio& radio);
+  void setColor(const Color&);
+ Color getColor()
+ { return leds.get_current_color(); }
 
 private:
 	LED leds;

@@ -35,7 +35,9 @@ bool Sphere_radio::send_color(const Color& color)
 }
 
 bool Sphere_radio::receive_color(Color& color)
-{
+{     
+  radio.startListening();
+
 	if (!radio.available()) {
 		return false;
 	}
@@ -47,5 +49,32 @@ bool Sphere_radio::receive_color(Color& color)
 
 	color = Color(buf);
 	return true;
+}
+
+bool Sphere_radio::query_mode()
+{
+  Serial.println("query");
+	radio.stopListening();
+	
+	char query[2] = {this_sphere_id_c + '0', 0};
+
+	if (!radio.write(query, sizeof(char)*2)) {
+		radio.startListening();
+		return false;
+  	}	
+
+	radio.startListening();
+  int started_waiting_at = micros();
+ 	if (!radio.available()) {                   
+     return false;   
+ 	}
+
+ 	char buf[2];
+	while (radio.available()) {
+		radio.read(buf, sizeof(char) * 2);
+	}
+ Serial.println(buf);
+
+	return (buf[0] == 'G');
 }
 

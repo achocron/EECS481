@@ -23,7 +23,7 @@ const double tol = 0.1;
 #define RADIO_CE 7
 #define RADIO_CS 8
 
-Sphere_radio radio(RADIO_PIN1,RADIO_PIN2);
+Sphere_radio radio(RADIO_CE,RADIO_CS);
 Motor motor(MOTOR);
 Accelerometer accelerometer;
 LED ballLights(LED_R,LED_G,LED_B);
