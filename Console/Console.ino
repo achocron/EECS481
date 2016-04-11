@@ -5,8 +5,6 @@
 #include <SPI.h>
 #include <Wire.h>
 
-// Patch 1
-// Patch 1
 #define NFC1_SCK  (45)
 #define NFC1_MOSI (41)
 #define NFC1_SS   (39)
@@ -39,10 +37,10 @@ Patch* patches[NUM_PATCHES] = { &patch1, &patch2 };
 #define LED_G 5
 #define LED_B 6
 
-#define RADIO_PIN1 9
-#define RADIO_PIN2 8
+#define RADIO_CE 9
+#define RADIO_CS 8
 
-Console_radio radio(RADIO_PIN1, RADIO_PIN2);
+Console_radio radio(RADIO_CE, RADIO_CS);
 
 bool last_mode;
 bool is_game_mode();
