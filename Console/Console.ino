@@ -108,15 +108,24 @@ void loop() {
 void update_current_patch()
 {
   Patch* old_patch = patches[current_patch];
+    
+  Serial.println("_");
+  Serial.println("****");
+  Serial.println(current_patch);
 
-  if (current_patch == 1) {
-    current_patch = 0;
+  if (micros() % 2) {
+    current_patch += 1;
   }
   else {
-    current_patch = 1;
+    current_patch += 2;
   }
+  current_patch %= NUM_PATCHES;
 
-patches[current_patch]->setColor(old_patch->getColor());
+  Serial.println(current_patch);
+  Serial.println("****");
+  Serial.println("_");
+
+  patches[current_patch]->setColor(old_patch->getColor());
   old_patch->setColor(Color(0,0,0));
 //  
  // current_patch %= NUM_PATCHES;
