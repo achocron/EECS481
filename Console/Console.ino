@@ -57,11 +57,12 @@ int current_patch = 0;
 
 void setup() {
 
-  last_mode = !is_game_mode();
 
   Serial.begin(115200);
 
   pinMode(SWITCH_PIN, INPUT);
+  
+  last_mode = !is_game_mode();
 
   radio.init();
 
@@ -73,15 +74,22 @@ void setup() {
 void loop() {
 
   if (!is_game_mode()) {
+    if(last_mode)
+    {
+      for (int i = 0; i < NUM_PATCHES; ++i) {
+        patches[i]->setColor({0,255,0});
+      }
+    }
     for (int i = 0; i < NUM_PATCHES; ++i) {
       patches[i]->loop(radio);
     }
+    last_mode = false;
     return;
   }
   //In game mode
 
-  if (is_game_mode() != last_mode) {
-    last_mode = is_game_mode();
+  if (!last_mode) {
+    last_mode = true;
     for (int i = 0; i < NUM_PATCHES; ++i) {
       patches[i]->setColor(Color(0,0,0));
     }
@@ -89,6 +97,8 @@ void loop() {
     update_current_patch();
     return;
   }
+
+  last_mode = true;
 
   bool scanned = patches[current_patch]->loop(radio);
   if (scanned) {

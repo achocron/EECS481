@@ -19,12 +19,11 @@ void Patch::init()
   scanner.init();
   pinMode(clockpin,OUTPUT);
   pinMode(datapin,OUTPUT);
-  setColor(Color(255,0,0));
+  setColor(Color(0,255,0));
 }
 
 bool Patch::loop(Console_radio& radio)
 {
-  show();
   int id_scanned;
   bool success = scanner.scan_for_id(&id_scanned);
 
@@ -52,8 +51,9 @@ void Patch::setColor(const Color& color)
   curr_color.set(color.r_val(), color.g_val(), color.b_val());
   for(unsigned int i=0;i<9;i++)
   {
-    rgbPixel[LED_indices[i]] = make_color(color.r_val(), color.g_val(), color.b_val());
+    rgbPixel[LED_indices[i]] = make_color(color.r_val(), color.b_val(), color.g_val());
   }
+  show();
 }
 
 void Patch::show() {
