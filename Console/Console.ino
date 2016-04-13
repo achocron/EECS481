@@ -37,9 +37,9 @@ unsigned int patch3LEDs[] = {12,13,14,15,16,17};
 
 #define NUM_PATCHES 3
 
-LED_segment segment1(0, 4);
-LED_segment segment2(6, 10);
-LED_segment segment3(12, 16);
+LED_segment segment1(1, 4);
+LED_segment segment3(6, 10);
+LED_segment segment2(12, 18);
 
 Patch patch1(NFC1_SCK, NFC1_MISO, NFC1_MOSI, NFC1_SS, &segment1);
 Patch patch2(NFC2_SCK, NFC2_MISO, NFC2_MOSI, NFC2_SS, &segment2);
@@ -62,8 +62,43 @@ void update_current_patch();
 Color game_color(100,0,0);
 int current_patch = 0;
 
+
+
+Color wheel(int WheelPos)
+{
+  byte r, g, b;
+  switch(WheelPos / 32)
+  {
+  case 0:
+    r = 31 - WheelPos % 32;   //Red down
+    g = WheelPos % 32;      // Green up
+    b = 0;                  //blue off
+    break;
+  case 1:
+    g = 31 - WheelPos % 32;  //green down
+    b = WheelPos % 32;      //blue up
+    r = 0;                  //red off
+    break;
+  case 2:
+    b = 31 - WheelPos % 32;  //blue down
+    r = WheelPos % 32;      //red up
+    g = 0;                  //green off
+    break;
+  }
+
+  return(Color(r,g,b));
+}
+
 void setup() {
 
+  pinMode(13, OUTPUT);
+
+  for (int i = 0; i < 10; i++) {
+    digitalWrite(13, HIGH);
+    delay(100);
+    digitalWrite(13, LOW);
+    delay(100);
+  }
 
   Serial.begin(115200);
 
@@ -78,13 +113,21 @@ void setup() {
   for (int i = 0; i < NUM_PATCHES; ++i) {
     patches[i]->init();
   }
+
+  /*
+  for (int i = 0; i < 96; ++i) {
+    patches[0]->setColor(wheel(i));
+    delay(100);
+  }
+  */
 }
 
 void loop() {
-  for (int i = 0; i < NUM_PATCHES; ++i) {
-      patches[i]->loop(radio);
-    }
   /*
+  for (int i = 0; i < NUM_PATCHES; ++i) {
+    patches[i]->loop(radio);
+  }
+  */
   if (!is_game_mode()) {
     if(last_mode)
     {
@@ -116,7 +159,7 @@ void loop() {
   if (scanned) {
     update_current_patch();
   }
-  */
+  
 
 } // Loop
 

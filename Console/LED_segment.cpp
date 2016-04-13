@@ -25,7 +25,7 @@ void LED_segment::init_strip()
 {
   pinMode(clockpin, OUTPUT);
   pinMode(datapin, OUTPUT);
-  set_all_color(Color(0,0,0));
+  
 }
 
 
@@ -42,7 +42,7 @@ void LED_segment::set_all_color(const Color& color)
 void LED_segment::set_color(const Color& color)
 {
   for (unsigned int i = min_index; i <= max_index; ++i) {
-    rgbPixel[i] = make_color(color);
+    rgbPixel[i-1] = make_color(color);
   }
   show();
 }
@@ -86,9 +86,14 @@ unsigned int LED_segment::make_color(const Color& color)
   unsigned int r = color.r_val();
   unsigned int g = color.g_val();
   unsigned int b = color.b_val();
+
+  r /= 8;
+  g /= 8;
+  b /= 8;
+
   r=r & 0x1F;
   g=g & 0x1F;
   b=b & 0x1F;
-  return  (b << 10) | (r << 5) | g;
+  return  (g << 10) | (r << 5) | b;
 }
 

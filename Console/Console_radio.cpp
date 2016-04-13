@@ -39,7 +39,7 @@ bool Console_radio::receive_color(Color& color, int sphere_id)
   while (!radio.available() ){                             // While nothing is received
     if (micros() - started_waiting_at > 200000 ){            // If waited longer than 200ms, indicate timeout and exit while loop
       radio.stopListening();
-      Serial.println("timeout");
+      //Serial.println("timeout");
         radio.stopListening();
 
       return false;

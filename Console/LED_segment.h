@@ -6,7 +6,7 @@
 #include "Color.h"
 
 
-#define nled 17
+#define nled 18
 
 
 class LED_segment {

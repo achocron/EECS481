@@ -47,12 +47,15 @@ bool Patch::loop(Console_radio& radio)
 
 void Patch::setColor(const Color& color)
 {
+
+  curr_color = color;
+
   Serial.print("Setting color: ");
   Serial.print(color.r_val());Serial.print(" ");
   Serial.print(color.g_val());Serial.print(" ");
   Serial.print(color.b_val());Serial.println(" ");
 
-  segment->set_color(color);
+  segment->set_color(curr_color);
 }
 
 
