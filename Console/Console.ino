@@ -1,6 +1,7 @@
 
 #include "Patch.h"
 #include "NFC_scanner.h"
+#include "LED_segment.h"
 #include "Console_radio.h"
 #include <SPI.h>
 #include <Wire.h>
@@ -24,19 +25,25 @@
 #define NFC3_SCK  (28)
 
 //LED Strip things
-#define nled 40
+/*
+#define nled 17
 unsigned int rgbPixel[nled]; // rgb values of whole led strip
 int datapin = 4;  // Led Strip St Pin
 int clockpin = 5; // Led Strip Ci Pin
-unsigned int patch1LEDs[9] = {0,1,2,3,4,5,6,7,8};
-unsigned int patch2LEDs[9] = {10,11,12,13,14,15,16,17,18};
-unsigned int patch3LEDs[9] = {20,21,22,23,24,25,26,27,28};
+unsigned int patch1LEDs[] = {0,1,2,3,4};
+unsigned int patch2LEDs[] = {6,7,8,9,10};
+unsigned int patch3LEDs[] = {12,13,14,15,16,17};
+*/
 
 #define NUM_PATCHES 3
 
-Patch patch1(NFC1_SCK, NFC1_MISO, NFC1_MOSI, NFC1_SS, patch1LEDs, rgbPixel, nled, clockpin, datapin);
-Patch patch2(NFC2_SCK, NFC2_MISO, NFC2_MOSI, NFC2_SS, patch2LEDs, rgbPixel, nled, clockpin, datapin);
-Patch patch3(NFC3_SCK, NFC3_MISO, NFC3_MOSI, NFC3_SS, patch3LEDs, rgbPixel, nled, clockpin, datapin);
+LED_segment segment1(0, 4);
+LED_segment segment2(6, 10);
+LED_segment segment3(12, 16);
+
+Patch patch1(NFC1_SCK, NFC1_MISO, NFC1_MOSI, NFC1_SS, &segment1);
+Patch patch2(NFC2_SCK, NFC2_MISO, NFC2_MOSI, NFC2_SS, &segment2);
+Patch patch3(NFC3_SCK, NFC3_MISO, NFC3_MOSI, NFC3_SS, &segment3);
 
 Patch* patches[NUM_PATCHES] = { &patch1, &patch2, &patch3 };
 
@@ -60,6 +67,8 @@ void setup() {
 
   Serial.begin(115200);
 
+  LED_segment::init_strip();
+
   pinMode(SWITCH_PIN, INPUT);
   
   last_mode = !is_game_mode();
@@ -72,7 +81,10 @@ void setup() {
 }
 
 void loop() {
-
+  for (int i = 0; i < NUM_PATCHES; ++i) {
+      patches[i]->loop(radio);
+    }
+  /*
   if (!is_game_mode()) {
     if(last_mode)
     {
@@ -99,11 +111,12 @@ void loop() {
   }
 
   last_mode = true;
-
+  
   bool scanned = patches[current_patch]->loop(radio);
   if (scanned) {
     update_current_patch();
   }
+  */
 
 } // Loop
 
@@ -137,12 +150,13 @@ void update_current_patch()
 }
 
 bool is_game_mode()
-{
-  if (digitalRead(SWITCH_PIN) == HIGH) {
+{ 
+  bool result = digitalRead(SWITCH_PIN) == HIGH;
+  if (result) {
     Serial.println("Game mode");
   }
   else {
-        Serial.println("Normal mode");
+    Serial.println("Normal mode");
   }
-  return (digitalRead(SWITCH_PIN) == HIGH);
+  return (result);
 }
