@@ -5,15 +5,11 @@
 #include <SPI.h>
 #include <Wire.h>
 
+// Patch 1
 #define NFC1_SS   (30)
 #define NFC1_MOSI (32)
 #define NFC1_MISO (34)
 #define NFC1_SCK  (36)
-
-#define PATCH1_R    (2)
-#define PATCH1_G    (3)
-#define PATCH1_B    (4)
-
 
 // Patch 2
 #define NFC2_SS   (38)
@@ -21,32 +17,28 @@
 #define NFC2_MISO (42)
 #define NFC2_SCK  (44)
 
-#define PATCH2_R    (7)
-#define PATCH2_G    (6)
-#define PATCH2_B    (5)
-
 // Patch 3
 #define NFC3_SS   (22)
 #define NFC3_MOSI (24)
 #define NFC3_MISO (26)
 #define NFC3_SCK  (28)
 
-#define PATCH3_R    (7)
-#define PATCH3_G    (6)
-#define PATCH3_B    (5)
-
+//LED Strip things
+#define nled 40
+unsigned int rgbPixel[nled]; // rgb values of whole led strip
+int datapin = 4;  // Led Strip St Pin
+int clockpin = 5; // Led Strip Ci Pin
+unsigned int patch1LEDs[9] = {0,1,2,3,4,5,6,7,8};
+unsigned int patch2LEDs[9] = {10,11,12,13,14,15,16,17,18};
+unsigned int patch3LEDs[9] = {20,21,22,23,24,25,26,27,28};
 
 #define NUM_PATCHES 3
 
-Patch patch1(NFC1_SCK, NFC1_MISO, NFC1_MOSI, NFC1_SS, PATCH1_R, PATCH1_G, PATCH1_B);
-Patch patch2(NFC2_SCK, NFC2_MISO, NFC2_MOSI, NFC2_SS, PATCH2_R, PATCH2_G, PATCH2_B);
-Patch patch3(NFC3_SCK, NFC3_MISO, NFC3_MOSI, NFC3_SS, PATCH3_R, PATCH3_G, PATCH3_B);
+Patch patch1(NFC1_SCK, NFC1_MISO, NFC1_MOSI, NFC1_SS, patch1LEDs, rgbPixel, nled, clockpin, datapin);
+Patch patch2(NFC2_SCK, NFC2_MISO, NFC2_MOSI, NFC2_SS, patch2LEDs, rgbPixel, nled, clockpin, datapin);
+Patch patch3(NFC3_SCK, NFC3_MISO, NFC3_MOSI, NFC3_SS, patch3LEDs, rgbPixel, nled, clockpin, datapin);
 
 Patch* patches[NUM_PATCHES] = { &patch1, &patch2, &patch3 };
-
-#define LED_R 3
-#define LED_G 5
-#define LED_B 6
 
 #define RADIO_CE 9
 #define RADIO_CS 53
