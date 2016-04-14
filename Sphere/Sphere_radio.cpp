@@ -2,7 +2,7 @@
 #include "Radio_consts.h"
 #include "Color.h"
 
-static const int this_sphere_id_c = sphereA_id_c;
+static const int this_sphere_id_c = sphereB_id_c;
 
 void Sphere_radio::init()
 {

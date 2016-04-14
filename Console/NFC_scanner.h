@@ -9,6 +9,10 @@
 #define REPEAT_DELAY 2000 // 2 seconds
 #define SCAN_DELAY 30 // 30 ms
 
+
+#define NUM_SPHERES 2
+#define NUM_TAGS_EACH 10
+
 class NFC_scanner {
 public:
 
@@ -26,7 +30,7 @@ public:
 
 private:
 
-  static constexpr uint32_t sphere_ids[2] = {23, 24 };
+  static uint32_t sphere_ids[NUM_SPHERES*NUM_TAGS_EACH];
 
   // convert uint32_t from nfc tag uid into sphere id
   static int get_id_from_uid(uint32_t uid);
